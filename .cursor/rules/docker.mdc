@@ -1,0 +1,27 @@
+# Docker-only development
+
+Applies to: entire repo
+
+## Rule
+
+All toolchain commands (`npm install`, `npm run build`, `npm test`, `npm run lint`, `npm run check`) **must run inside Docker**, not on the host.
+
+Use:
+
+```bash
+make setup    # first time
+make check
+make build
+make dev
+```
+
+Or `docker compose run --rm dev <command>`.
+
+## Exceptions
+
+- Chrome manual smoke on the host (`chrome://extensions` → load `dist/`)
+- Editing source files on the host (bind-mounted into container)
+
+## Docs
+
+See [docs/engineering/docker.md](../../docs/engineering/docker.md).

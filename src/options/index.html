@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>add_header — Settings</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <main class="options">
+      <header class="options__header">
+        <div>
+          <h1>add_header</h1>
+          <p class="options__subtitle">
+            Add custom request headers per website. Patterns:
+            <code>https://example.com</code> or <code>*.example.com</code>
+          </p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="global-enabled" />
+          <span>Extension enabled</span>
+        </label>
+      </header>
+
+      <section class="options__toolbar">
+        <button type="button" id="add-site" class="btn btn--primary">
+          Add site rule
+        </button>
+      </section>
+
+      <div id="rules-list" class="rules-list"></div>
+
+      <template id="site-rule-template">
+        <article class="site-rule">
+          <div class="site-rule__head">
+            <input
+              type="text"
+              class="site-rule__pattern input"
+              placeholder="https://example.com"
+              spellcheck="false"
+            />
+            <label class="toggle">
+              <input type="checkbox" class="site-rule__enabled" />
+              <span>On</span>
+            </label>
+            <button type="button" class="btn btn--ghost site-rule__delete">
+              Remove site
+            </button>
+          </div>
+          <div class="headers"></div>
+          <button type="button" class="btn btn--secondary add-header">
+            + Add header
+          </button>
+        </article>
+      </template>
+
+      <template id="header-row-template">
+        <div class="header-row">
+          <label class="toggle">
+            <input type="checkbox" class="header-row__enabled" checked />
+          </label>
+          <input
+            type="text"
+            class="header-row__name input"
+            placeholder="Header name"
+            spellcheck="false"
+          />
+          <input
+            type="text"
+            class="header-row__value input"
+            placeholder="Header value"
+            spellcheck="false"
+          />
+          <button type="button" class="btn btn--ghost header-row__delete">
+            ×
+          </button>
+        </div>
+      </template>
+    </main>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

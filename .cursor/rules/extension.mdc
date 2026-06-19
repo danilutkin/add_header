@@ -1,0 +1,31 @@
+# Chrome MV3 extension conventions
+
+Applies to: `src/`, `manifest.json`, `dist/`
+
+## Architecture
+
+- UI layers (`popup/`, `options/`) call **shared** storage and types only.
+- **Background** service worker owns DNR sync — UI never calls `declarativeNetRequest` directly.
+- Rule shape is defined once in `src/shared/types.ts`.
+
+## Permissions
+
+- Request least privilege per slice; document each permission in manifest comments or docs.
+- Do not log header values or tokens.
+- Avoid blocking `webRequest`; use `declarativeNetRequest.modifyHeaders`.
+
+## URL matching
+
+- Supported patterns: exact origin (`https://example.com`) and subdomain wildcard (`*.example.com`).
+- Any change to matching logic requires tests in `tests/url-match.test.ts`.
+
+## Storage
+
+- Use `chrome.storage.local` via `src/shared/storage.ts`.
+- Treat stored header values as sensitive on shared machines.
+
+## Build
+
+- Output goes to `dist/` — load unpacked from there, not repo root.
+- Run `make check` (Docker) before marking a slice done.
+- Do not run npm on the host; use `make` or `docker compose run --rm dev …`.

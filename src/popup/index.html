@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>add_header</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <header class="popup__header">
+        <h1 class="popup__title">add_header</h1>
+        <label class="toggle">
+          <input type="checkbox" id="global-enabled" />
+          <span>Enabled</span>
+        </label>
+      </header>
+
+      <section class="popup__site">
+        <div class="popup__site-row">
+          <div>
+            <p class="popup__label">Current site</p>
+            <p class="popup__origin" id="current-origin">—</p>
+          </div>
+          <label class="toggle popup__site-toggle" id="site-enabled-wrap" hidden>
+            <input type="checkbox" id="site-enabled" />
+            <span>On</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="popup__headers" id="headers-section" hidden>
+        <div id="headers-list" class="headers-list"></div>
+        <button type="button" id="add-header" class="btn btn--secondary">
+          + Add header
+        </button>
+      </section>
+
+      <section class="popup__empty" id="empty-section" hidden>
+        <p id="empty-message">No headers for this site yet.</p>
+        <button type="button" id="setup-site" class="btn btn--primary">
+          Set up headers
+        </button>
+      </section>
+
+      <footer class="popup__footer">
+        <button type="button" id="open-options" class="btn btn--link">
+          Manage all sites…
+        </button>
+      </footer>
+    </main>
+
+    <template id="header-row-template">
+      <div class="header-row">
+        <label class="toggle header-row__toggle">
+          <input type="checkbox" class="header-row__enabled" checked />
+        </label>
+        <input
+          type="text"
+          class="header-row__name input"
+          placeholder="Header name"
+          spellcheck="false"
+        />
+        <input
+          type="text"
+          class="header-row__value input"
+          placeholder="Value"
+          spellcheck="false"
+        />
+        <button type="button" class="header-row__delete" title="Remove header">
+          ×
+        </button>
+      </div>
+    </template>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>
