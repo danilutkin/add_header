@@ -1,4 +1,4 @@
-import type { HeaderEntry, SiteRule } from "./types";
+import type { HeaderEntry } from "./types";
 
 export function syncHeaderRowFromDom(row: HTMLElement, header: HeaderEntry): void {
   header.enabled = (
@@ -14,12 +14,12 @@ export function syncHeaderRowFromDom(row: HTMLElement, header: HeaderEntry): voi
 
 export function syncSiteRuleHeadersFromDom(
   container: ParentNode,
-  siteRule: SiteRule,
+  owner: { headers: HeaderEntry[] },
 ): void {
   for (const row of container.querySelectorAll<HTMLElement>(".header-row")) {
     const headerId = row.dataset.headerId;
     if (!headerId) continue;
-    const header = siteRule.headers.find((h) => h.id === headerId);
+    const header = owner.headers.find((h) => h.id === headerId);
     if (header) syncHeaderRowFromDom(row, header);
   }
 }
