@@ -8,6 +8,7 @@ import {
 } from "../shared/persist";
 import {
   createProfileForSiteRule,
+  duplicateProfile,
   getActiveProfile,
   getProfileTabColor,
   profileTabLabel,
@@ -27,6 +28,7 @@ const globalEnabledEl = document.getElementById(
 const profileTabsEl = document.getElementById("profile-tabs")!;
 const profileNameEl = document.getElementById("profile-name")!;
 const deleteProfileBtn = document.getElementById("delete-profile");
+const duplicateProfileBtn = document.getElementById("duplicate-profile");
 const reloadTabBtn = document.getElementById("reload-tab");
 const currentOriginEl = document.getElementById("current-origin")!;
 const siteEnabledWrap = document.getElementById("site-enabled-wrap")!;
@@ -229,6 +231,15 @@ addProfileTabBtn.addEventListener("click", () => {
   const profile = createProfileForSiteRule(activeRule);
   activeRule.profiles.push(profile);
   activeRule.activeProfileId = profile.id;
+  void flushPersist().then(() => render());
+});
+
+duplicateProfileBtn?.addEventListener("click", () => {
+  if (!activeRule) return;
+  syncSettingsFromDom();
+  const copy = duplicateProfile(getActiveProfile(activeRule));
+  activeRule.profiles.push(copy);
+  activeRule.activeProfileId = copy.id;
   void flushPersist().then(() => render());
 });
 

@@ -24,9 +24,25 @@
       </header>
 
       <section class="options__toolbar">
-        <button type="button" id="add-site" class="btn btn--primary">
-          Add site rule set
-        </button>
+        <div class="options__toolbar-primary">
+          <button type="button" id="add-site" class="btn btn--primary">
+            Add site rule set
+          </button>
+        </div>
+        <div class="options__toolbar-secondary">
+          <button type="button" id="export-settings" class="btn btn--secondary">
+            Export
+          </button>
+          <button type="button" id="import-settings" class="btn btn--secondary">
+            Import
+          </button>
+          <input
+            type="file"
+            id="import-file"
+            accept="application/json,.json"
+            hidden
+          />
+        </div>
       </section>
 
       <div id="rules-list" class="rules-list"></div>
@@ -73,6 +89,9 @@
               />
               <div class="headers"></div>
               <div class="profile-editor__actions">
+                <button type="button" class="btn btn--ghost duplicate-profile-tab">
+                  Duplicate profile
+                </button>
                 <button type="button" class="btn btn--ghost remove-profile-tab" hidden>
                   Remove profile
                 </button>

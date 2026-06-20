@@ -1,11 +1,20 @@
 import {
   syncSiteRuleHeadersFromDom,
 } from "../shared/header-dom";
+import {
+  ExportParseError,
+  exportFilename,
+  mergeSettings,
+  parseExportJson,
+  replaceSettings,
+  serializeExport,
+} from "../shared/export-import";
 import { renderEditableHeaderList } from "../shared/header-list";
 import { persistSettings, persistSettingsFireAndForget } from "../shared/persist";
 import {
   createProfileForSiteRule,
   defaultProfileName,
+  duplicateProfile,
   getActiveProfile,
   getProfileTabColor,
   profileTabLabel,
@@ -25,6 +34,9 @@ const globalEnabledEl = document.getElementById(
 ) as HTMLInputElement;
 const rulesListEl = document.getElementById("rules-list")!;
 const addSiteBtn = document.getElementById("add-site")!;
+const exportBtn = document.getElementById("export-settings")!;
+const importBtn = document.getElementById("import-settings")!;
+const importFileEl = document.getElementById("import-file") as HTMLInputElement;
 const siteRuleTemplate = document.getElementById(
   "site-rule-template",
 ) as HTMLTemplateElement;
@@ -203,6 +215,7 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
   const patternsListEl = node.querySelector(".patterns-list")!;
   const addPatternBtn = node.querySelector(".add-pattern")!;
   const addProfileTabBtn = node.querySelector(".add-profile-tab")!;
+  const duplicateProfileBtn = node.querySelector(".duplicate-profile-tab")!;
   const removeProfileBtn = node.querySelector(".remove-profile-tab")!;
   const nameInput = node.querySelector(".profile-editor__name") as HTMLInputElement;
   const descriptionInput = node.querySelector(
@@ -265,6 +278,14 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
     void flushPersist().then(() => render());
   });
 
+  duplicateProfileBtn.addEventListener("click", () => {
+    syncSettingsFromDom();
+    const copy = duplicateProfile(getActiveProfile(siteRule));
+    siteRule.profiles.push(copy);
+    siteRule.activeProfileId = copy.id;
+    void flushPersist().then(() => render());
+  });
+
   removeProfileBtn.addEventListener("click", () => {
     if (siteRule.profiles.length <= 1) return;
     removeProfileFromSiteRule(siteRule, siteRule.activeProfileId);
@@ -285,6 +306,75 @@ addSiteBtn.addEventListener("click", () => {
   settings.siteRules.push(createEmptySiteRule());
   void flushPersist();
   render();
+});
+
+function downloadExport(): void {
+  syncSettingsFromDom();
+  const blob = new Blob([serializeExport(settings)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = exportFilename();
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function handleImportFile(file: File): Promise<void> {
+  const text = await file.text();
+  let imported;
+  try {
+    imported = parseExportJson(text);
+  } catch (error) {
+    const message =
+      error instanceof ExportParseError
+        ? error.message
+        : "Could not read the import file";
+    window.alert(message);
+    return;
+  }
+
+  const ruleCount = imported.siteRules.length;
+  if (ruleCount === 0) {
+    window.alert("The import file has no site rules to add.");
+    return;
+  }
+
+  const merge = window.confirm(
+    `Import ${ruleCount} site rule set${ruleCount === 1 ? "" : "s"}?\n\n` +
+      "OK = Merge with your current settings (duplicate profile names get \"(imported)\")\n" +
+      "Cancel = Replace all current settings",
+  );
+
+  if (merge) {
+    settings = mergeSettings(settings, imported);
+  } else {
+    const replace = window.confirm(
+      "Replace all current settings? This cannot be undone.",
+    );
+    if (!replace) return;
+    settings = replaceSettings(imported);
+    settings.globalEnabled = globalEnabledEl.checked;
+  }
+
+  await flushPersist();
+  render();
+}
+
+exportBtn.addEventListener("click", () => {
+  downloadExport();
+});
+
+importBtn.addEventListener("click", () => {
+  importFileEl.value = "";
+  importFileEl.click();
+});
+
+importFileEl.addEventListener("change", () => {
+  const file = importFileEl.files?.[0];
+  if (!file) return;
+  void handleImportFile(file);
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

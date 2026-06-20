@@ -1,6 +1,6 @@
 # Current status
 
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-20
 
 ## Scorecard
 
@@ -9,7 +9,7 @@ Last reviewed: 2026-06-19
 | MV3 scaffold | Done — build outputs `dist/` |
 | Per-site rules + profiles + DNR | Done |
 | Popup / options UI | Done — profiles, draft header rows |
-| Unit tests | Done — 44 tests (`make check`) |
+| Unit tests | Done — 53 tests (`make check`) |
 | Manual Chrome smoke | Done — httpbin + localhost `/headers` |
 | Store publish | Not started |
 
@@ -34,8 +34,6 @@ Last reviewed: 2026-06-19
 
 ## Open gaps
 
-- Export/import
-- Profile rename / duplicate
 - Per-site default profile binding (roadmap #3)
 - `<all_urls>` — acceptable for unpacked dev; narrow before store
 

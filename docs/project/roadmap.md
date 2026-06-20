@@ -1,6 +1,6 @@
 # Roadmap
 
-Ranked — not a backlog. Last reviewed: 2026-06-19.
+Ranked — not a backlog. Last reviewed: 2026-06-20.
 
 ## 1. First shippable slice (v0.1.0)
 
@@ -23,19 +23,19 @@ Named snapshots of header sets that represent a **test state** — e.g. “Free 
 - [x] Optional description per profile (options)
 - [x] Draft header row UX (no separate Add button)
 - [x] Auto site setup on popup open; empty rules not saved
-- [ ] Rename, duplicate profiles
+- [x] Rename profiles (options name field)
+- [x] Duplicate profiles (popup + options)
 
 *Why first:* Manual QA lives in state switching. Profiles turn header editing from a ritual into a repeatable workflow.
 
-### 2. Export / import (profiles + site rules)
+### 2. Export / import (profiles + site rules) — **shipped**
 
 Download and upload configuration as JSON — profiles, per-site rules, and global toggle state.
 
-- Share a “QA starter pack” across the team (Slack, repo, wiki)
-- Backup before browser profile reset or machine change
-- Import merges or replaces (pick one behavior early; default: merge with conflict prompt)
-
-*Why second:* Profiles only pay off at team scale when configs are portable.
+- [x] Export settings as `add_header` JSON bundle
+- [x] Import merge (match site rules by URL patterns; rename conflicting profile names)
+- [x] Import replace (with confirmation)
+- [ ] Share a “QA starter pack” doc / example file in repo (optional)
 
 ### 3. Per-site profile binding
 

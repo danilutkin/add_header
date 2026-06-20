@@ -185,6 +185,12 @@ body {
   min-height: 24px;
 }
 
+.popup__profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn--danger {
   color: var(--danger);
 }
