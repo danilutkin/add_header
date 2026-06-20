@@ -94,18 +94,22 @@ export function patternToUrlFilter(pattern: string): string | null {
   return `||${parsed.hostname}^`;
 }
 
-export function findSiteRuleForUrl<T extends { pattern: string }>(
+export function findSiteRuleForUrl<T extends { patterns: string[] }>(
   url: string,
   rules: T[],
 ): T | undefined {
-  return rules.find((rule) => urlMatchesPattern(url, rule.pattern));
+  return rules.find((rule) => urlMatchesSiteRule(url, rule));
 }
 
-export function findMatchingSiteRule<T extends { pattern: string; enabled: boolean }>(
+export function urlMatchesSiteRule(
   url: string,
-  rules: T[],
-): T | undefined {
-  return rules.find(
-    (rule) => rule.enabled && urlMatchesPattern(url, rule.pattern),
-  );
+  rule: { patterns: string[] },
+): boolean {
+  return rule.patterns.some((pattern) => urlMatchesPattern(url, pattern));
+}
+
+export function findMatchingSiteRule<
+  T extends { patterns: string[]; enabled: boolean },
+>(url: string, rules: T[]): T | undefined {
+  return rules.find((rule) => rule.enabled && urlMatchesSiteRule(url, rule));
 }

@@ -12,7 +12,8 @@
         <div>
           <h1>add_header</h1>
           <p class="options__subtitle">
-            Add custom request headers per website. Patterns:
+            Site rule sets match URL patterns and use profile tabs — tab 1 is the
+            default header set. Patterns:
             <code>https://example.com</code> or <code>*.example.com</code>
           </p>
         </div>
@@ -24,7 +25,7 @@
 
       <section class="options__toolbar">
         <button type="button" id="add-site" class="btn btn--primary">
-          Add site rule
+          Add site rule set
         </button>
       </section>
 
@@ -33,25 +34,64 @@
       <template id="site-rule-template">
         <article class="site-rule">
           <div class="site-rule__head">
-            <input
-              type="text"
-              class="site-rule__pattern input"
-              placeholder="https://example.com"
-              spellcheck="false"
-            />
             <label class="toggle">
               <input type="checkbox" class="site-rule__enabled" />
               <span>On</span>
             </label>
             <button type="button" class="btn btn--ghost site-rule__delete">
-              Remove site
+              Remove rule set
             </button>
           </div>
-          <div class="headers"></div>
-          <button type="button" class="btn btn--secondary add-header">
-            + Add header
-          </button>
+
+          <div class="site-rule__patterns">
+            <p class="site-rule__label">URL patterns</p>
+            <div class="patterns-list"></div>
+            <button type="button" class="btn btn--secondary add-pattern">
+              + Add pattern
+            </button>
+          </div>
+
+          <div class="site-rule__section">
+            <div class="profile-tabs-row">
+              <div class="profile-tabs" role="tablist"></div>
+              <button type="button" class="profile-tab profile-tab--add add-profile-tab" title="Add profile">
+                +
+              </button>
+            </div>
+            <div class="profile-editor">
+              <input
+                type="text"
+                class="profile-editor__name input"
+                placeholder="Profile name"
+                spellcheck="false"
+              />
+              <input
+                type="text"
+                class="profile-editor__description input"
+                placeholder="What state does this profile simulate? (optional)"
+                spellcheck="false"
+              />
+              <div class="headers"></div>
+              <div class="profile-editor__actions">
+                <button type="button" class="btn btn--ghost remove-profile-tab" hidden>
+                  Remove profile
+                </button>
+              </div>
+            </div>
+          </div>
         </article>
+      </template>
+
+      <template id="pattern-row-template">
+        <div class="pattern-row">
+          <input
+            type="text"
+            class="pattern-row__input input"
+            placeholder="https://example.com or *.example.com"
+            spellcheck="false"
+          />
+          <button type="button" class="btn btn--ghost pattern-row__delete">×</button>
+        </div>
       </template>
 
       <template id="header-row-template">

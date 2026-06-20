@@ -3,6 +3,7 @@ import type { ExtensionSettings } from "../shared/types";
 import {
   compileSettingsToDnrRules,
   DNR_RULE_ID_BASE,
+  managedRulesMatch,
 } from "../shared/dnr-compile";
 
 let applyChain = Promise.resolve();
@@ -14,8 +15,12 @@ function enqueueApply(task: () => Promise<void>): Promise<void> {
 
 async function applyRulesForSettings(settings: ExtensionSettings): Promise<void> {
   const newRules = compileSettingsToDnrRules(settings);
-
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
+
+  if (managedRulesMatch(newRules, existing)) {
+    return;
+  }
+
   // Remove all managed rules first — addRules fails if an ID already exists.
   const removeRuleIds = existing
     .map((r) => r.id)
