@@ -1,16 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { findOrCreateSiteRule } from "../src/shared/site-rules";
-import type { SiteRule } from "../src/shared/types";
+import {
+  createEmptySiteRule,
+  findOrCreateSiteRule,
+  prepareSettingsForSave,
+  siteRuleHasConfiguredHeaders,
+} from "../src/shared/site-rules";
+import type { ExtensionSettings, SiteRule } from "../src/shared/types";
 
 describe("findOrCreateSiteRule", () => {
   const existing: SiteRule[] = [
     {
       id: "site-1",
-      pattern: "https://httpbin.org",
+      patterns: ["https://httpbin.org"],
       enabled: true,
-      headers: [
-        { id: "h1", name: "X-Test", value: "1", enabled: true },
+      profiles: [
+        {
+          id: "p1",
+          name: "1",
+          description: "",
+          headers: [
+            { id: "h1", name: "X-Test", value: "1", enabled: true },
+          ],
+        },
       ],
+      activeProfileId: "p1",
     },
   ];
 
@@ -33,7 +46,60 @@ describe("findOrCreateSiteRule", () => {
     );
     expect(result.isNew).toBe(true);
     expect(result.siteRules).toHaveLength(2);
-    expect(result.rule.pattern).toBe("https://example.com");
-    expect(result.rule.headers).toHaveLength(1);
+    expect(result.rule.patterns).toEqual(["https://example.com"]);
+    expect(result.rule.profiles).toHaveLength(1);
+  });
+});
+
+describe("siteRuleHasConfiguredHeaders", () => {
+  it("is false when all header names are empty", () => {
+    const rule = createEmptySiteRule();
+    rule.patterns = ["https://httpbin.org"];
+    expect(siteRuleHasConfiguredHeaders(rule)).toBe(false);
+  });
+
+  it("is true when any profile has a named header", () => {
+    const rule = createEmptySiteRule();
+    rule.profiles[0].headers[0].name = "X-Test";
+    expect(siteRuleHasConfiguredHeaders(rule)).toBe(true);
+  });
+});
+
+describe("prepareSettingsForSave", () => {
+  it("removes site rules without configured headers", () => {
+    const empty = createEmptySiteRule();
+    empty.patterns = ["https://httpbin.org"];
+    const configured: SiteRule = {
+      ...createEmptySiteRule(),
+      id: "configured",
+      patterns: ["http://localhost:8093"],
+    };
+    configured.profiles[0].headers[0].name = "x2";
+
+    const settings: ExtensionSettings = {
+      globalEnabled: true,
+      siteRules: [empty, configured],
+    };
+
+    const prepared = prepareSettingsForSave(settings);
+    expect(prepared.siteRules).toHaveLength(1);
+    expect(prepared.siteRules[0].id).toBe("configured");
+  });
+
+  it("keeps enabled flag on configured site rules", () => {
+    const configured: SiteRule = {
+      ...createEmptySiteRule(),
+      id: "configured",
+      enabled: true,
+      patterns: ["http://localhost:8093"],
+    };
+    configured.profiles[0].headers[0].name = "x2";
+
+    const prepared = prepareSettingsForSave({
+      globalEnabled: true,
+      siteRules: [configured],
+    });
+
+    expect(prepared.siteRules[0].enabled).toBe(true);
   });
 });

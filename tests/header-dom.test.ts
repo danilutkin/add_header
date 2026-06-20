@@ -3,7 +3,6 @@ import {
   syncHeaderRowFromDom,
   syncSiteRuleHeadersFromDom,
 } from "../src/shared/header-dom";
-import type { SiteRule } from "../src/shared/types";
 
 describe("header-dom sync", () => {
   it("syncs checkbox state from DOM into header model", () => {
@@ -48,10 +47,7 @@ describe("header-dom sync", () => {
       </div>
     `;
 
-    const siteRule: SiteRule = {
-      id: "site",
-      pattern: "https://example.com",
-      enabled: true,
+    const profile = {
       headers: [
         { id: "h1", name: "", value: "", enabled: false },
         { id: "h2", name: "", value: "", enabled: true },
@@ -60,10 +56,10 @@ describe("header-dom sync", () => {
 
     syncSiteRuleHeadersFromDom(
       document.querySelector(".headers")!,
-      siteRule,
+      profile,
     );
 
-    expect(siteRule.headers[0].enabled).toBe(true);
-    expect(siteRule.headers[1].enabled).toBe(false);
+    expect(profile.headers[0].enabled).toBe(true);
+    expect(profile.headers[1].enabled).toBe(false);
   });
 });

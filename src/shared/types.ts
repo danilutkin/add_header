@@ -6,16 +6,27 @@ export interface HeaderEntry {
   enabled: boolean;
 }
 
+/** Header profile — tab 1 is the default; each tab is a full header set for QA. */
+export interface HeaderProfile {
+  id: string;
+  name: string;
+  description: string;
+  headers: HeaderEntry[];
+}
+
 /**
- * Per-site rule. Pattern is either:
+ * Per-site rule set. Each pattern is either:
  * - exact origin: `https://example.com`
  * - subdomain wildcard: `*.example.com` (matches foo.example.com, not example.com)
  */
 export interface SiteRule {
   id: string;
-  pattern: string;
+  patterns: string[];
   enabled: boolean;
-  headers: HeaderEntry[];
+  /** At least one profile; profile 1 replaces the old “base headers”. */
+  profiles: HeaderProfile[];
+  /** Selected profile — headers are injected for this profile immediately. */
+  activeProfileId: string;
 }
 
 export interface ExtensionSettings {

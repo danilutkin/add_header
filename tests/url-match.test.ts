@@ -5,6 +5,7 @@ import {
   parsePattern,
   patternToUrlFilter,
   urlMatchesPattern,
+  urlMatchesSiteRule,
 } from "../src/shared/url-match";
 
 describe("parsePattern", () => {
@@ -62,22 +63,50 @@ describe("patternToUrlFilter", () => {
   });
 });
 
+describe("urlMatchesSiteRule", () => {
+  it("matches when any pattern matches", () => {
+    expect(
+      urlMatchesSiteRule("https://ati.st/page", {
+        patterns: ["https://ati.st", "*.ati.st"],
+      }),
+    ).toBe(true);
+    expect(
+      urlMatchesSiteRule("https://app.ati.st/page", {
+        patterns: ["https://ati.st", "*.ati.st"],
+      }),
+    ).toBe(true);
+    expect(
+      urlMatchesSiteRule("https://other.com", {
+        patterns: ["https://ati.st", "*.ati.st"],
+      }),
+    ).toBe(false);
+  });
+});
+
 describe("compileSettingsToDnrRules", () => {
   const baseSettings: ExtensionSettings = {
     globalEnabled: true,
     siteRules: [
       {
         id: "1",
-        pattern: "https://httpbin.org",
+        patterns: ["https://httpbin.org"],
         enabled: true,
-        headers: [
+        profiles: [
           {
-            id: "h1",
-            name: "X-Test",
-            value: "hello",
-            enabled: true,
+            id: "p-default",
+            name: "1",
+            description: "",
+            headers: [
+              {
+                id: "h1",
+                name: "X-Test",
+                value: "hello",
+                enabled: true,
+              },
+            ],
           },
         ],
+        activeProfileId: "p-default",
       },
     ],
   };
@@ -103,7 +132,7 @@ describe("compileSettingsToDnrRules", () => {
 
   it("skips disabled site rules and headers", () => {
     const rules = compileSettingsToDnrRules({
-      globalEnabled: true,
+      ...baseSettings,
       siteRules: [
         {
           ...baseSettings.siteRules[0],
@@ -114,6 +143,61 @@ describe("compileSettingsToDnrRules", () => {
     expect(rules).toHaveLength(0);
   });
 
+  it("uses only the active profile headers", () => {
+    const rules = compileSettingsToDnrRules({
+      ...baseSettings,
+      siteRules: [
+        {
+          ...baseSettings.siteRules[0],
+          profiles: [
+            baseSettings.siteRules[0].profiles[0],
+            {
+              id: "p1",
+              name: "Admin",
+              description: "",
+              headers: [
+                { id: "ph1", name: "X-Role", value: "admin", enabled: true },
+              ],
+            },
+          ],
+          activeProfileId: "p1",
+        },
+      ],
+    });
+    expect(rules).toHaveLength(1);
+    expect(rules[0].action.requestHeaders).toEqual([
+      { header: "X-Role", operation: "set", value: "admin" },
+    ]);
+  });
+
+  it("compiles rules for each pattern in a site rule set", () => {
+    const rules = compileSettingsToDnrRules({
+      globalEnabled: true,
+      siteRules: [
+        {
+          id: "1",
+          patterns: ["https://ati.st", "*.ati.st"],
+          enabled: true,
+          profiles: [
+            {
+              id: "p1",
+              name: "1",
+              description: "",
+              headers: [
+                { id: "h1", name: "X-Test", value: "v", enabled: true },
+              ],
+            },
+          ],
+          activeProfileId: "p1",
+        },
+      ],
+    });
+    expect(rules).toHaveLength(2);
+    expect(rules.map((r) => r.condition.urlFilter)).toEqual(
+      expect.arrayContaining(["https://ati.st^", "||ati.st^"]),
+    );
+  });
+
   it("assigns unique rule ids across site rules", () => {
     const rules = compileSettingsToDnrRules({
       globalEnabled: true,
@@ -121,11 +205,19 @@ describe("compileSettingsToDnrRules", () => {
         baseSettings.siteRules[0],
         {
           id: "2",
-          pattern: "https://example.com",
+          patterns: ["https://example.com"],
           enabled: true,
-          headers: [
-            { id: "h2", name: "X-Other", value: "v", enabled: true },
+          profiles: [
+            {
+              id: "p2",
+              name: "1",
+              description: "",
+              headers: [
+                { id: "h2", name: "X-Other", value: "v", enabled: true },
+              ],
+            },
           ],
+          activeProfileId: "p2",
         },
       ],
     });
