@@ -27,7 +27,13 @@ import {
   STORAGE_KEY,
 } from "../shared/types";
 import { loadSettings, normalizeSettings } from "../shared/storage";
-import { canonicalizePattern, parsePattern } from "../shared/url-match";
+import {
+  canIncludeSubdomains,
+  patternsToRows,
+  rowsToPatterns,
+  type PatternRowState,
+} from "../shared/pattern-rows";
+import { parsePattern } from "../shared/url-match";
 
 const globalEnabledEl = document.getElementById(
   "global-enabled",
@@ -51,6 +57,32 @@ let settings: ExtensionSettings;
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressStorageRender = false;
 
+function syncPatternRowsFromDom(node: HTMLElement): PatternRowState[] {
+  const rows: PatternRowState[] = [];
+  for (const patternRow of node.querySelectorAll<HTMLElement>(".pattern-row")) {
+    rows.push({
+      base: (
+        patternRow.querySelector(".pattern-row__input") as HTMLInputElement
+      ).value,
+      includeSubdomains: (
+        patternRow.querySelector(".pattern-row__subdomains") as HTMLInputElement
+      ).checked,
+    });
+  }
+  return rows;
+}
+
+function updatePatternRowSubdomainsControl(
+  input: HTMLInputElement,
+  subdomainsCheckbox: HTMLInputElement,
+): void {
+  const canWildcard = canIncludeSubdomains(input.value.trim());
+  subdomainsCheckbox.disabled = !canWildcard;
+  if (!canWildcard) {
+    subdomainsCheckbox.checked = false;
+  }
+}
+
 function syncSettingsFromDom(): void {
   settings.globalEnabled = globalEnabledEl.checked;
 
@@ -65,16 +97,9 @@ function syncSettingsFromDom(): void {
       node.querySelector(".site-rule__enabled") as HTMLInputElement
     ).checked;
 
-    siteRule.patterns = [];
-    for (const patternRow of node.querySelectorAll<HTMLElement>(".pattern-row")) {
-      const value = (
-        patternRow.querySelector(".pattern-row__input") as HTMLInputElement
-      ).value.trim();
-      siteRule.patterns.push(canonicalizePattern(value));
-    }
-    if (siteRule.patterns.length === 0) {
-      siteRule.patterns = [""];
-    }
+    siteRule.patterns = rowsToPatterns(
+      syncPatternRowsFromDom(node),
+    );
 
     const profile = getActiveProfile(siteRule);
     const profileIndex = siteRule.profiles.findIndex(
@@ -234,37 +259,71 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
     render();
   });
 
-  function renderPatternRow(pattern: string, index: number): void {
+  function repaintPatternRows(rows: PatternRowState[]): void {
+    patternsListEl.replaceChildren();
+    rows.forEach((state, index) =>
+      renderPatternRow(state, index, rows.length),
+    );
+  }
+
+  function renderPatternRow(
+    state: PatternRowState,
+    index: number,
+    rowCount: number,
+  ): void {
     const row = patternRowTemplate.content.firstElementChild!.cloneNode(
       true,
     ) as HTMLElement;
     const input = row.querySelector(".pattern-row__input") as HTMLInputElement;
-    input.value = pattern;
+    const subdomainsCheckbox = row.querySelector(
+      ".pattern-row__subdomains",
+    ) as HTMLInputElement | null;
+    const deleteBtn = row.querySelector(".pattern-row__delete") as HTMLButtonElement;
+    input.value = state.base;
+    if (subdomainsCheckbox) {
+      subdomainsCheckbox.checked = state.includeSubdomains;
+    }
+    deleteBtn.hidden = rowCount <= 1;
 
-    input.addEventListener("input", () => {
+    function refreshPatternInputState(): void {
       input.setCustomValidity(
         !input.value.trim() || parsePattern(input.value.trim()) ? "" : "Invalid pattern",
       );
+      if (subdomainsCheckbox) {
+        updatePatternRowSubdomainsControl(input, subdomainsCheckbox);
+      }
+    }
+
+    input.addEventListener("input", () => {
+      refreshPatternInputState();
       schedulePersist();
     });
 
-    row.querySelector(".pattern-row__delete")!.addEventListener("click", () => {
-      if (siteRule.patterns.length <= 1) return;
-      siteRule.patterns.splice(index, 1);
+    subdomainsCheckbox?.addEventListener("change", () => {
+      schedulePersist();
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      syncSettingsFromDom();
+      const rows = syncPatternRowsFromDom(node);
+      if (rows.length <= 1) return;
+      rows.splice(index, 1);
+      siteRule.patterns = rowsToPatterns(rows);
       void flushPersist();
       render();
     });
 
+    refreshPatternInputState();
     patternsListEl.append(row);
   }
 
-  patternsListEl.replaceChildren();
-  siteRule.patterns.forEach((pattern, index) => renderPatternRow(pattern, index));
+  repaintPatternRows(patternsToRows(siteRule.patterns));
 
   addPatternBtn.addEventListener("click", () => {
-    siteRule.patterns.push("");
-    void flushPersist();
-    render();
+    syncSettingsFromDom();
+    const rows = syncPatternRowsFromDom(node);
+    rows.push({ base: "", includeSubdomains: false });
+    repaintPatternRows(rows);
   });
 
   nameInput.addEventListener("input", () => schedulePersist());

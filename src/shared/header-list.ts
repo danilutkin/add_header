@@ -35,7 +35,7 @@ export function applyHeaderRowDraftState(
   } else {
     elements.enabledInput.checked = header.enabled;
   }
-  elements.deleteBtn.hidden = isDraft;
+  elements.deleteBtn.disabled = isDraft;
 }
 
 export function activateHeaderRow(

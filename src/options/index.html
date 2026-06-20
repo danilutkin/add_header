@@ -110,7 +110,13 @@
             placeholder="example.com, https://example.com, or *example.com"
             spellcheck="false"
           />
-          <button type="button" class="btn btn--ghost pattern-row__delete">×</button>
+          <label class="toggle pattern-row__wildcard" title="Also match *.example.com (all subdomains of this host)">
+            <input type="checkbox" class="pattern-row__subdomains" />
+            <span>Wildcard</span>
+          </label>
+          <button type="button" class="btn btn--ghost pattern-row__delete" title="Remove URL">
+            ×
+          </button>
         </div>
       </template>
 
