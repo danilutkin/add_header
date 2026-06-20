@@ -30,20 +30,42 @@
       </section>
 
       <section class="popup__headers" id="headers-section" hidden>
+        <div class="profile-tabs-row">
+          <div class="profile-tabs" id="profile-tabs" role="tablist"></div>
+          <button
+            type="button"
+            id="add-profile-tab"
+            class="profile-tab profile-tab--add"
+            title="Add profile"
+          >
+            +
+          </button>
+        </div>
+        <div class="popup__profile-meta">
+          <p class="popup__profile-name" id="profile-name"></p>
+          <button
+            type="button"
+            id="delete-profile"
+            class="btn btn--link btn--danger"
+            hidden
+          >
+            Delete profile
+          </button>
+        </div>
         <div id="headers-list" class="headers-list"></div>
-        <button type="button" id="add-header" class="btn btn--secondary">
-          + Add header
-        </button>
+        <p class="popup__hint" id="reload-hint">
+          Reload tab if this page was open before you changed headers.
+        </p>
       </section>
 
       <section class="popup__empty" id="empty-section" hidden>
-        <p id="empty-message">No headers for this site yet.</p>
-        <button type="button" id="setup-site" class="btn btn--primary">
-          Set up headers
-        </button>
+        <p id="empty-message"></p>
       </section>
 
       <footer class="popup__footer">
+        <button type="button" id="reload-tab" class="btn btn--link">
+          Reload tab
+        </button>
         <button type="button" id="open-options" class="btn btn--link">
           Manage all sites…
         </button>
