@@ -27,7 +27,7 @@ import {
   STORAGE_KEY,
 } from "../shared/types";
 import { loadSettings, normalizeSettings } from "../shared/storage";
-import { parsePattern } from "../shared/url-match";
+import { canonicalizePattern, parsePattern } from "../shared/url-match";
 
 const globalEnabledEl = document.getElementById(
   "global-enabled",
@@ -70,7 +70,7 @@ function syncSettingsFromDom(): void {
       const value = (
         patternRow.querySelector(".pattern-row__input") as HTMLInputElement
       ).value.trim();
-      siteRule.patterns.push(value);
+      siteRule.patterns.push(canonicalizePattern(value));
     }
     if (siteRule.patterns.length === 0) {
       siteRule.patterns = [""];
@@ -140,7 +140,7 @@ function render(): void {
     const empty = document.createElement("p");
     empty.className = "empty-state";
     empty.textContent =
-      "No site rule sets yet. Add one — e.g. https://ati.st and *.ati.st.";
+      "No site rule sets yet. Add one — e.g. https://example.com and *.example.com.";
     rulesListEl.append(empty);
     return;
   }

@@ -30,7 +30,7 @@ Last reviewed: 2026-06-20
 - **Site On (policy A):** Opening the popup on a site with configured headers turns the site rule **On** and re-applies DNR.
 - **Draft headers:** Bottom row is a draft until a header name is typed; typing a name enables the row and adds a new draft below.
 - **Empty rules:** Site rules with no header names are not persisted.
-- **Basic Auth:** When `Authorization` is injected, `WWW-Authenticate` is stripped to avoid browser login loops. Background Traefik tabs may still prompt if no matching rule applies.
+- **Basic Auth:** When `Authorization` is injected, `WWW-Authenticate` is stripped to avoid browser login loops. Pages may still prompt if no matching rule applies.
 
 ## Open gaps
 

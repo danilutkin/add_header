@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { compileSettingsToDnrRules } from "../src/shared/dnr-compile";
 import type { ExtensionSettings } from "../src/shared/types";
 import {
+  canonicalizePattern,
   parsePattern,
   patternToUrlFilter,
   urlMatchesPattern,
@@ -28,6 +29,28 @@ describe("parsePattern", () => {
     expect(parsePattern("")).toBeNull();
     expect(parsePattern("not-a-url")).toBeNull();
     expect(parsePattern("*.")).toBeNull();
+  });
+
+  it("accepts bare hostname and wildcard shorthand", () => {
+    expect(parsePattern("example.com")).toEqual({
+      kind: "origin",
+      hostname: "example.com",
+      scheme: "https",
+    });
+    expect(parsePattern("*example.com")).toEqual({
+      kind: "subdomain",
+      hostname: "example.com",
+    });
+  });
+});
+
+describe("canonicalizePattern", () => {
+  it("normalizes shorthand forms", () => {
+    expect(canonicalizePattern("example.com")).toBe("https://example.com");
+    expect(canonicalizePattern("*example.com")).toBe("*.example.com");
+    expect(canonicalizePattern("https://example.com")).toBe(
+      "https://example.com",
+    );
   });
 });
 
@@ -66,20 +89,28 @@ describe("patternToUrlFilter", () => {
 describe("urlMatchesSiteRule", () => {
   it("matches when any pattern matches", () => {
     expect(
-      urlMatchesSiteRule("https://ati.st/page", {
-        patterns: ["https://ati.st", "*.ati.st"],
+      urlMatchesSiteRule("https://example.com/page", {
+        patterns: ["https://example.com", "*.example.com"],
       }),
     ).toBe(true);
     expect(
-      urlMatchesSiteRule("https://app.ati.st/page", {
-        patterns: ["https://ati.st", "*.ati.st"],
+      urlMatchesSiteRule("https://app.example.com/page", {
+        patterns: ["https://example.com", "*.example.com"],
       }),
     ).toBe(true);
     expect(
       urlMatchesSiteRule("https://other.com", {
-        patterns: ["https://ati.st", "*.ati.st"],
+        patterns: ["https://example.com", "*.example.com"],
       }),
     ).toBe(false);
+  });
+
+  it("matches shorthand patterns after canonicalization", () => {
+    expect(
+      urlMatchesSiteRule("https://api.example.com/page", {
+        patterns: ["example.com", "*example.com"],
+      }),
+    ).toBe(true);
   });
 });
 
@@ -176,7 +207,7 @@ describe("compileSettingsToDnrRules", () => {
       siteRules: [
         {
           id: "1",
-          patterns: ["https://ati.st", "*.ati.st"],
+          patterns: ["https://example.com", "*.example.com"],
           enabled: true,
           profiles: [
             {
@@ -194,7 +225,7 @@ describe("compileSettingsToDnrRules", () => {
     });
     expect(rules).toHaveLength(2);
     expect(rules.map((r) => r.condition.urlFilter)).toEqual(
-      expect.arrayContaining(["https://ati.st^", "||ati.st^"]),
+      expect.arrayContaining(["https://example.com^", "||example.com^"]),
     );
   });
 

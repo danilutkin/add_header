@@ -1,4 +1,5 @@
 import { cloneHeaderEntries } from "./profiles";
+import { canonicalizePattern } from "./url-match";
 import { normalizeSettings } from "./storage";
 import { prepareSettingsForSave } from "./site-rules";
 import { createId, ExtensionSettings, SiteRule } from "./types";
@@ -22,7 +23,7 @@ export class ExportParseError extends Error {
 
 export function siteRulePatternsKey(patterns: string[]): string {
   return patterns
-    .map((pattern) => pattern.trim().toLowerCase())
+    .map((pattern) => canonicalizePattern(pattern).toLowerCase())
     .filter(Boolean)
     .sort()
     .join("\0");

@@ -16,8 +16,8 @@ export interface HeaderProfile {
 
 /**
  * Per-site rule set. Each pattern is either:
- * - exact origin: `https://example.com`
- * - subdomain wildcard: `*.example.com` (matches foo.example.com, not example.com)
+ * - exact origin: `https://example.com` or `example.com`
+ * - subdomain wildcard: `*.example.com` or `*example.com` (matches foo.example.com, not example.com)
  */
 export interface SiteRule {
   id: string;

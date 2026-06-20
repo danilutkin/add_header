@@ -35,9 +35,9 @@ function sampleSettings(): ExtensionSettings {
 }
 
 describe("siteRulePatternsKey", () => {
-  it("ignores pattern order and casing", () => {
+  it("ignores pattern order, casing, and shorthand", () => {
     expect(
-      siteRulePatternsKey(["*.Example.com", "https://example.com"]),
+      siteRulePatternsKey(["*example.com", "example.com"]),
     ).toBe(siteRulePatternsKey(["https://example.com", "*.example.com"]));
   });
 });

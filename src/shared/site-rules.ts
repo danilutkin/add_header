@@ -4,7 +4,7 @@ import {
   normalizeProfile,
 } from "./profiles";
 import { createId, ExtensionSettings, HeaderEntry, SiteRule } from "./types";
-import { findSiteRuleForUrl } from "./url-match";
+import { canonicalizePattern, findSiteRuleForUrl } from "./url-match";
 
 export function createHeaderEntry(partial?: Partial<HeaderEntry>): HeaderEntry {
   return {
@@ -33,9 +33,11 @@ export function normalizeSiteRule(raw: Record<string, unknown>): SiteRule | null
 
   let patterns: string[] = [];
   if (Array.isArray(raw.patterns)) {
-    patterns = raw.patterns.filter((p): p is string => typeof p === "string");
+    patterns = raw.patterns
+      .filter((p): p is string => typeof p === "string")
+      .map(canonicalizePattern);
   } else if (typeof raw.pattern === "string" && raw.pattern.trim()) {
-    patterns = [raw.pattern];
+    patterns = [canonicalizePattern(raw.pattern)];
   }
   if (patterns.length === 0) {
     patterns = [""];
