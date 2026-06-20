@@ -1,4 +1,5 @@
 import type { ExtensionSettings } from "./types";
+import { prepareSettingsForSave } from "./site-rules";
 import { STORAGE_KEY } from "./types";
 
 export interface PersistMessage {
@@ -14,7 +15,8 @@ export function cloneSettings(settings: ExtensionSettings): ExtensionSettings {
 
 /** Direct storage write — survives popup teardown better than messaging alone. */
 export function saveSettingsImmediately(settings: ExtensionSettings): void {
-  void chrome.storage.local.set({ [STORAGE_KEY]: cloneSettings(settings) });
+  const prepared = prepareSettingsForSave(settings);
+  void chrome.storage.local.set({ [STORAGE_KEY]: cloneSettings(prepared) });
 }
 
 let persistChain = Promise.resolve();
@@ -23,7 +25,7 @@ async function sendPersist(
   settings: ExtensionSettings,
   options?: { tabId?: number; reload?: boolean },
 ): Promise<void> {
-  const snapshot = cloneSettings(settings);
+  const snapshot = cloneSettings(prepareSettingsForSave(settings));
   const response = await chrome.runtime.sendMessage({
     type: "persist",
     settings: snapshot,
