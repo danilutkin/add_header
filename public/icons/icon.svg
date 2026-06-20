@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- v3: bigger header card + add badge (fills canvas, readable at 16px) -->
+  <circle cx="64" cy="64" r="64" fill="#0EA5E9"/>
+  <rect x="16" y="28" width="88" height="72" rx="14" fill="#FFFFFF"/>
+  <rect x="28" y="44" width="42" height="13" rx="6.5" fill="#0EA5E9"/>
+  <rect x="28" y="65" width="64" height="13" rx="6.5" fill="#BAE6FD"/>
+  <circle cx="96" cy="32" r="22" fill="#4285F4"/>
+  <path
+    d="M96 22v20M86 32h20"
+    stroke="#FFFFFF"
+    stroke-width="6"
+    stroke-linecap="round"
+  />
+</svg>
