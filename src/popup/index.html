@@ -43,14 +43,23 @@
         </div>
         <div class="popup__profile-meta">
           <p class="popup__profile-name" id="profile-name"></p>
-          <button
-            type="button"
-            id="delete-profile"
-            class="btn btn--link btn--danger"
-            hidden
-          >
-            Delete profile
-          </button>
+          <div class="popup__profile-actions">
+            <button
+              type="button"
+              id="duplicate-profile"
+              class="btn btn--link"
+            >
+              Duplicate
+            </button>
+            <button
+              type="button"
+              id="delete-profile"
+              class="btn btn--link btn--danger"
+              hidden
+            >
+              Delete profile
+            </button>
+          </div>
         </div>
         <div id="headers-list" class="headers-list"></div>
         <p class="popup__hint" id="reload-hint">

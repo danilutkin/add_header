@@ -1,6 +1,6 @@
 # Current status
 
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-20
 
 ## Scorecard
 
@@ -9,7 +9,7 @@ Last reviewed: 2026-06-19
 | MV3 scaffold | Done — build outputs `dist/` |
 | Per-site rules + profiles + DNR | Done |
 | Popup / options UI | Done — profiles, draft header rows |
-| Unit tests | Done — 44 tests (`make check`) |
+| Unit tests | Done — 53 tests (`make check`) |
 | Manual Chrome smoke | Done — httpbin + localhost `/headers` |
 | Store publish | Not started |
 
@@ -30,12 +30,10 @@ Last reviewed: 2026-06-19
 - **Site On (policy A):** Opening the popup on a site with configured headers turns the site rule **On** and re-applies DNR.
 - **Draft headers:** Bottom row is a draft until a header name is typed; typing a name enables the row and adds a new draft below.
 - **Empty rules:** Site rules with no header names are not persisted.
-- **Basic Auth:** When `Authorization` is injected, `WWW-Authenticate` is stripped to avoid browser login loops. Background Traefik tabs may still prompt if no matching rule applies.
+- **Basic Auth:** When `Authorization` is injected, `WWW-Authenticate` is stripped to avoid browser login loops. Pages may still prompt if no matching rule applies.
 
 ## Open gaps
 
-- Export/import
-- Profile rename / duplicate
 - Per-site default profile binding (roadmap #3)
 - `<all_urls>` — acceptable for unpacked dev; narrow before store
 

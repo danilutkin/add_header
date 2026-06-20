@@ -16,7 +16,7 @@ Applies to: `src/`, `manifest.json`, `dist/`
 
 ## URL matching
 
-- Supported patterns: exact origin (`https://example.com`) and subdomain wildcard (`*.example.com`).
+- Supported patterns: exact origin (`https://example.com`, `example.com`) and subdomain wildcard (`*.example.com`, `*example.com`).
 - Any change to matching logic requires tests in `tests/url-match.test.ts`.
 
 ## Storage

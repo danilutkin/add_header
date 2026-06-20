@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createEmptySiteRule,
   findOrCreateSiteRule,
+  normalizeSiteRule,
   prepareSettingsForSave,
   siteRuleHasConfiguredHeaders,
 } from "../src/shared/site-rules";
@@ -101,5 +102,29 @@ describe("prepareSettingsForSave", () => {
     });
 
     expect(prepared.siteRules[0].enabled).toBe(true);
+  });
+});
+
+describe("normalizeSiteRule", () => {
+  it("canonicalizes shorthand URL patterns", () => {
+    const rule = normalizeSiteRule({
+      id: "site-1",
+      patterns: ["example.com", "*example.com"],
+      enabled: true,
+      profiles: [
+        {
+          id: "p1",
+          name: "1",
+          description: "",
+          headers: [{ id: "h1", name: "X-Test", value: "1", enabled: true }],
+        },
+      ],
+      activeProfileId: "p1",
+    });
+
+    expect(rule?.patterns).toEqual([
+      "https://example.com",
+      "*.example.com",
+    ]);
   });
 });

@@ -14,7 +14,8 @@
           <p class="options__subtitle">
             Site rule sets match URL patterns and use profile tabs — tab 1 is the
             default header set. Patterns:
-            <code>https://example.com</code> or <code>*.example.com</code>
+            <code>example.com</code>, <code>https://example.com</code>, or
+            <code>*example.com</code>
           </p>
         </div>
         <label class="toggle">
@@ -24,9 +25,25 @@
       </header>
 
       <section class="options__toolbar">
-        <button type="button" id="add-site" class="btn btn--primary">
-          Add site rule set
-        </button>
+        <div class="options__toolbar-primary">
+          <button type="button" id="add-site" class="btn btn--primary">
+            Add site rule set
+          </button>
+        </div>
+        <div class="options__toolbar-secondary">
+          <button type="button" id="export-settings" class="btn btn--secondary">
+            Export
+          </button>
+          <button type="button" id="import-settings" class="btn btn--secondary">
+            Import
+          </button>
+          <input
+            type="file"
+            id="import-file"
+            accept="application/json,.json"
+            hidden
+          />
+        </div>
       </section>
 
       <div id="rules-list" class="rules-list"></div>
@@ -73,6 +90,9 @@
               />
               <div class="headers"></div>
               <div class="profile-editor__actions">
+                <button type="button" class="btn btn--ghost duplicate-profile-tab">
+                  Duplicate profile
+                </button>
                 <button type="button" class="btn btn--ghost remove-profile-tab" hidden>
                   Remove profile
                 </button>
@@ -87,10 +107,16 @@
           <input
             type="text"
             class="pattern-row__input input"
-            placeholder="https://example.com or *.example.com"
+            placeholder="example.com, https://example.com, or *example.com"
             spellcheck="false"
           />
-          <button type="button" class="btn btn--ghost pattern-row__delete">×</button>
+          <label class="toggle pattern-row__wildcard" title="Also match *.example.com (all subdomains of this host)">
+            <input type="checkbox" class="pattern-row__subdomains" />
+            <span>Wildcard</span>
+          </label>
+          <button type="button" class="btn btn--ghost pattern-row__delete" title="Remove URL">
+            ×
+          </button>
         </div>
       </template>
 

@@ -1,6 +1,6 @@
 # Agent snapshot
 
-Ranked state for cross-cutting or risky work. Last reviewed: 2026-06-19.
+Ranked state for cross-cutting or risky work. Last reviewed: 2026-06-20.
 
 ## Now
 
@@ -13,14 +13,15 @@ Ranked state for cross-cutting or risky work. Last reviewed: 2026-06-19.
 - Persist: prune site rules with no header names; legacy storage migration
 - `chrome.storage.local` + background DNR sync
 - Icon: SVG → PNG via `sharp` on build
+- Export/import JSON (merge + replace) from options page
+- Profile duplicate in popup + options
 
 ## Next
 
-1. Export/import rules (JSON)
-2. Profile rename / duplicate
-3. Per-site default profile binding
-4. Optional host permissions instead of `<all_urls>` (store readiness)
-5. Chrome Web Store publish prep
+1. Per-site default profile binding
+2. Optional host permissions instead of `<all_urls>` (store readiness)
+3. Chrome Web Store publish prep
+4. Header name autocomplete (Tab to complete)
 
 ## Not default
 

@@ -2,8 +2,8 @@
  * URL matching for site rules.
  *
  * Supported patterns:
- * - `https://example.com` — exact origin match
- * - `*.example.com` — any subdomain (not the apex)
+ * - `https://example.com` or `example.com` — exact origin match
+ * - `*.example.com` or `*example.com` — any subdomain (not the apex)
  */
 
 export interface ParsedPattern {
@@ -12,8 +12,31 @@ export interface ParsedPattern {
   scheme?: string;
 }
 
-export function parsePattern(pattern: string): ParsedPattern | null {
+/** Normalize common shorthand: `example.com` → `https://example.com`, `*example.com` → `*.example.com`. */
+export function canonicalizePattern(pattern: string): string {
   const trimmed = pattern.trim();
+  if (!trimmed) return trimmed;
+
+  if (trimmed.startsWith("*") && !trimmed.startsWith("*.")) {
+    const hostname = trimmed.slice(1).toLowerCase();
+    if (isValidHostname(hostname)) {
+      return `*.${hostname}`;
+    }
+    return trimmed;
+  }
+
+  if (!trimmed.includes("://") && !trimmed.startsWith("*")) {
+    const hostname = trimmed.toLowerCase();
+    if (isValidHostname(hostname)) {
+      return `https://${hostname}`;
+    }
+  }
+
+  return trimmed;
+}
+
+export function parsePattern(pattern: string): ParsedPattern | null {
+  const trimmed = canonicalizePattern(pattern);
   if (!trimmed) return null;
 
   if (trimmed.startsWith("*.")) {

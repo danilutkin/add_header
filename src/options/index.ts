@@ -1,11 +1,20 @@
 import {
   syncSiteRuleHeadersFromDom,
 } from "../shared/header-dom";
+import {
+  ExportParseError,
+  exportFilename,
+  mergeSettings,
+  parseExportJson,
+  replaceSettings,
+  serializeExport,
+} from "../shared/export-import";
 import { renderEditableHeaderList } from "../shared/header-list";
 import { persistSettings, persistSettingsFireAndForget } from "../shared/persist";
 import {
   createProfileForSiteRule,
   defaultProfileName,
+  duplicateProfile,
   getActiveProfile,
   getProfileTabColor,
   profileTabLabel,
@@ -18,6 +27,12 @@ import {
   STORAGE_KEY,
 } from "../shared/types";
 import { loadSettings, normalizeSettings } from "../shared/storage";
+import {
+  canIncludeSubdomains,
+  patternsToRows,
+  rowsToPatterns,
+  type PatternRowState,
+} from "../shared/pattern-rows";
 import { parsePattern } from "../shared/url-match";
 
 const globalEnabledEl = document.getElementById(
@@ -25,6 +40,9 @@ const globalEnabledEl = document.getElementById(
 ) as HTMLInputElement;
 const rulesListEl = document.getElementById("rules-list")!;
 const addSiteBtn = document.getElementById("add-site")!;
+const exportBtn = document.getElementById("export-settings")!;
+const importBtn = document.getElementById("import-settings")!;
+const importFileEl = document.getElementById("import-file") as HTMLInputElement;
 const siteRuleTemplate = document.getElementById(
   "site-rule-template",
 ) as HTMLTemplateElement;
@@ -38,6 +56,32 @@ const headerRowTemplate = document.getElementById(
 let settings: ExtensionSettings;
 let persistTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressStorageRender = false;
+
+function syncPatternRowsFromDom(node: HTMLElement): PatternRowState[] {
+  const rows: PatternRowState[] = [];
+  for (const patternRow of node.querySelectorAll<HTMLElement>(".pattern-row")) {
+    rows.push({
+      base: (
+        patternRow.querySelector(".pattern-row__input") as HTMLInputElement
+      ).value,
+      includeSubdomains: (
+        patternRow.querySelector(".pattern-row__subdomains") as HTMLInputElement
+      ).checked,
+    });
+  }
+  return rows;
+}
+
+function updatePatternRowSubdomainsControl(
+  input: HTMLInputElement,
+  subdomainsCheckbox: HTMLInputElement,
+): void {
+  const canWildcard = canIncludeSubdomains(input.value.trim());
+  subdomainsCheckbox.disabled = !canWildcard;
+  if (!canWildcard) {
+    subdomainsCheckbox.checked = false;
+  }
+}
 
 function syncSettingsFromDom(): void {
   settings.globalEnabled = globalEnabledEl.checked;
@@ -53,16 +97,9 @@ function syncSettingsFromDom(): void {
       node.querySelector(".site-rule__enabled") as HTMLInputElement
     ).checked;
 
-    siteRule.patterns = [];
-    for (const patternRow of node.querySelectorAll<HTMLElement>(".pattern-row")) {
-      const value = (
-        patternRow.querySelector(".pattern-row__input") as HTMLInputElement
-      ).value.trim();
-      siteRule.patterns.push(value);
-    }
-    if (siteRule.patterns.length === 0) {
-      siteRule.patterns = [""];
-    }
+    siteRule.patterns = rowsToPatterns(
+      syncPatternRowsFromDom(node),
+    );
 
     const profile = getActiveProfile(siteRule);
     const profileIndex = siteRule.profiles.findIndex(
@@ -128,7 +165,7 @@ function render(): void {
     const empty = document.createElement("p");
     empty.className = "empty-state";
     empty.textContent =
-      "No site rule sets yet. Add one — e.g. https://ati.st and *.ati.st.";
+      "No site rule sets yet. Add one — e.g. https://example.com and *.example.com.";
     rulesListEl.append(empty);
     return;
   }
@@ -203,6 +240,7 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
   const patternsListEl = node.querySelector(".patterns-list")!;
   const addPatternBtn = node.querySelector(".add-pattern")!;
   const addProfileTabBtn = node.querySelector(".add-profile-tab")!;
+  const duplicateProfileBtn = node.querySelector(".duplicate-profile-tab")!;
   const removeProfileBtn = node.querySelector(".remove-profile-tab")!;
   const nameInput = node.querySelector(".profile-editor__name") as HTMLInputElement;
   const descriptionInput = node.querySelector(
@@ -221,37 +259,71 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
     render();
   });
 
-  function renderPatternRow(pattern: string, index: number): void {
+  function repaintPatternRows(rows: PatternRowState[]): void {
+    patternsListEl.replaceChildren();
+    rows.forEach((state, index) =>
+      renderPatternRow(state, index, rows.length),
+    );
+  }
+
+  function renderPatternRow(
+    state: PatternRowState,
+    index: number,
+    rowCount: number,
+  ): void {
     const row = patternRowTemplate.content.firstElementChild!.cloneNode(
       true,
     ) as HTMLElement;
     const input = row.querySelector(".pattern-row__input") as HTMLInputElement;
-    input.value = pattern;
+    const subdomainsCheckbox = row.querySelector(
+      ".pattern-row__subdomains",
+    ) as HTMLInputElement | null;
+    const deleteBtn = row.querySelector(".pattern-row__delete") as HTMLButtonElement;
+    input.value = state.base;
+    if (subdomainsCheckbox) {
+      subdomainsCheckbox.checked = state.includeSubdomains;
+    }
+    deleteBtn.hidden = rowCount <= 1;
 
-    input.addEventListener("input", () => {
+    function refreshPatternInputState(): void {
       input.setCustomValidity(
         !input.value.trim() || parsePattern(input.value.trim()) ? "" : "Invalid pattern",
       );
+      if (subdomainsCheckbox) {
+        updatePatternRowSubdomainsControl(input, subdomainsCheckbox);
+      }
+    }
+
+    input.addEventListener("input", () => {
+      refreshPatternInputState();
       schedulePersist();
     });
 
-    row.querySelector(".pattern-row__delete")!.addEventListener("click", () => {
-      if (siteRule.patterns.length <= 1) return;
-      siteRule.patterns.splice(index, 1);
+    subdomainsCheckbox?.addEventListener("change", () => {
+      schedulePersist();
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      syncSettingsFromDom();
+      const rows = syncPatternRowsFromDom(node);
+      if (rows.length <= 1) return;
+      rows.splice(index, 1);
+      siteRule.patterns = rowsToPatterns(rows);
       void flushPersist();
       render();
     });
 
+    refreshPatternInputState();
     patternsListEl.append(row);
   }
 
-  patternsListEl.replaceChildren();
-  siteRule.patterns.forEach((pattern, index) => renderPatternRow(pattern, index));
+  repaintPatternRows(patternsToRows(siteRule.patterns));
 
   addPatternBtn.addEventListener("click", () => {
-    siteRule.patterns.push("");
-    void flushPersist();
-    render();
+    syncSettingsFromDom();
+    const rows = syncPatternRowsFromDom(node);
+    rows.push({ base: "", includeSubdomains: false });
+    repaintPatternRows(rows);
   });
 
   nameInput.addEventListener("input", () => schedulePersist());
@@ -262,6 +334,14 @@ function createSiteRuleElement(siteRule: SiteRule): HTMLElement {
     const profile = createProfileForSiteRule(siteRule);
     siteRule.profiles.push(profile);
     siteRule.activeProfileId = profile.id;
+    void flushPersist().then(() => render());
+  });
+
+  duplicateProfileBtn.addEventListener("click", () => {
+    syncSettingsFromDom();
+    const copy = duplicateProfile(getActiveProfile(siteRule));
+    siteRule.profiles.push(copy);
+    siteRule.activeProfileId = copy.id;
     void flushPersist().then(() => render());
   });
 
@@ -285,6 +365,75 @@ addSiteBtn.addEventListener("click", () => {
   settings.siteRules.push(createEmptySiteRule());
   void flushPersist();
   render();
+});
+
+function downloadExport(): void {
+  syncSettingsFromDom();
+  const blob = new Blob([serializeExport(settings)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = exportFilename();
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function handleImportFile(file: File): Promise<void> {
+  const text = await file.text();
+  let imported;
+  try {
+    imported = parseExportJson(text);
+  } catch (error) {
+    const message =
+      error instanceof ExportParseError
+        ? error.message
+        : "Could not read the import file";
+    window.alert(message);
+    return;
+  }
+
+  const ruleCount = imported.siteRules.length;
+  if (ruleCount === 0) {
+    window.alert("The import file has no site rules to add.");
+    return;
+  }
+
+  const merge = window.confirm(
+    `Import ${ruleCount} site rule set${ruleCount === 1 ? "" : "s"}?\n\n` +
+      "OK = Merge with your current settings (duplicate profile names get \"(imported)\")\n" +
+      "Cancel = Replace all current settings",
+  );
+
+  if (merge) {
+    settings = mergeSettings(settings, imported);
+  } else {
+    const replace = window.confirm(
+      "Replace all current settings? This cannot be undone.",
+    );
+    if (!replace) return;
+    settings = replaceSettings(imported);
+    settings.globalEnabled = globalEnabledEl.checked;
+  }
+
+  await flushPersist();
+  render();
+}
+
+exportBtn.addEventListener("click", () => {
+  downloadExport();
+});
+
+importBtn.addEventListener("click", () => {
+  importFileEl.value = "";
+  importFileEl.click();
+});
+
+importFileEl.addEventListener("change", () => {
+  const file = importFileEl.files?.[0];
+  if (!file) return;
+  void handleImportFile(file);
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

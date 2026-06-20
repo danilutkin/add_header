@@ -185,6 +185,12 @@ body {
   min-height: 24px;
 }
 
+.popup__profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn--danger {
   color: var(--danger);
 }
@@ -207,13 +213,24 @@ body {
 
 .header-row {
   display: grid;
-  grid-template-columns: auto 1fr 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) 2rem;
   gap: 6px;
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px;
+}
+
+.header-row--draft .header-row__delete {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.header-row__delete {
+  justify-self: center;
+  min-width: 2rem;
+  padding: 2px 0;
 }
 
 .header-row__toggle {
