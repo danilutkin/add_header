@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — Request Headers</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        line-height: 1.6;
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3rem;
+      }
+      h1 {
+        font-size: 1.75rem;
+        line-height: 1.25;
+      }
+      h2 {
+        font-size: 1.125rem;
+        margin-top: 2rem;
+      }
+      p,
+      li {
+        color: color-mix(in srgb, CanvasText 88%, transparent);
+      }
+      a {
+        color: LinkText;
+      }
+      .updated {
+        font-size: 0.9rem;
+        color: color-mix(in srgb, CanvasText 65%, transparent);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Request Headers Chrome extension · Last updated: June 22, 2026</p>
+
+    <p>
+      Request Headers (“the extension”) is a browser extension that lets you
+      configure custom HTTP request headers for websites you choose. This policy
+      explains what data the extension handles and how.
+    </p>
+
+    <h2>What we collect</h2>
+    <p>
+      The extension does <strong>not</strong> collect, transmit, or sell your
+      data. There is no backend server, no analytics, and no account system.
+    </p>
+    <p>
+      Configuration you enter is stored locally on your device using Chrome’s
+      <code>chrome.storage.local</code> API, including:
+    </p>
+    <ul>
+      <li>Per-site URL patterns</li>
+      <li>Header names and values you configure</li>
+      <li>Profile names and optional descriptions</li>
+      <li>Global and per-site on/off settings</li>
+    </ul>
+    <p>
+      Header values may include sensitive information (for example API keys or
+      tokens) if you choose to enter them. You control that data; treat shared
+      computers accordingly.
+    </p>
+
+    <h2>How data is used</h2>
+    <p>
+      Stored settings are used only to apply your header rules in the browser
+      via Chrome’s declarative network request APIs on origins you explicitly
+      configure and grant access to.
+    </p>
+
+    <h2>Data sharing</h2>
+    <p>
+      We do not share, sell, or transfer your data to third parties. Nothing
+      leaves your device except normal browser traffic to sites you visit with
+      your configured headers attached.
+    </p>
+
+    <h2>Data retention and deletion</h2>
+    <p>
+      Data remains on your device until you delete it in the extension, remove
+      the extension, or clear extension data in Chrome settings
+      (<code>chrome://extensions</code> → Request Headers → Remove or Clear
+      data).
+    </p>
+
+    <h2>Permissions</h2>
+    <p>
+      The extension requests access to specific websites only when you enable
+      header rules for those sites. Storage permission is used to save your
+      configuration locally.
+    </p>
+
+    <h2>Children</h2>
+    <p>The extension is not directed at children under 13.</p>
+
+    <h2>Changes</h2>
+    <p>
+      We may update this policy. The “Last updated” date above will change when
+      we do. Continued use after changes means you accept the updated policy.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions about this policy:
+      <a href="https://github.com/danilutkin/add_header/issues">GitHub Issues</a>
+    </p>
+  </body>
+</html>

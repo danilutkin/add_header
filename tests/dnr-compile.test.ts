@@ -26,6 +26,17 @@ function makeSiteRule(overrides?: Partial<SiteRule>): SiteRule {
 }
 
 describe("compileSettingsToDnrRules", () => {
+  it("skips patterns without granted host permission", () => {
+    const settings: ExtensionSettings = {
+      globalEnabled: true,
+      siteRules: [makeSiteRule()],
+    };
+    const rules = compileSettingsToDnrRules(settings, {
+      grantedPatterns: new Set(["https://other.test"]),
+    });
+    expect(rules).toHaveLength(0);
+  });
+
   it("uses active profile headers", () => {
     const settings: ExtensionSettings = {
       globalEnabled: true,

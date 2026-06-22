@@ -78,7 +78,7 @@ describe("createExportBundle", () => {
 describe("exportFilename", () => {
   it("includes the export date", () => {
     expect(exportFilename(new Date("2026-06-20T12:00:00Z"))).toBe(
-      "add_header-export-2026-06-20.json",
+      "request-headers-export-2026-06-20.json",
     );
   });
 });

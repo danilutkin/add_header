@@ -1,5 +1,6 @@
 import type { ExtensionSettings } from "./types";
 import { prepareSettingsForSave } from "./site-rules";
+import { ensureSettingsHostPermissions } from "./host-permissions";
 import { STORAGE_KEY } from "./types";
 
 export interface PersistMessage {
@@ -21,6 +22,11 @@ export function saveSettingsImmediately(settings: ExtensionSettings): void {
 
 let persistChain = Promise.resolve();
 
+export interface PersistResult {
+  settings: ExtensionSettings;
+  deniedPatterns: string[];
+}
+
 async function sendPersist(
   settings: ExtensionSettings,
   options?: { tabId?: number; reload?: boolean },
@@ -38,25 +44,32 @@ async function sendPersist(
   }
 }
 
-export async function persistSettings(
+async function persistWithHostAccess(
   settings: ExtensionSettings,
   options?: { tabId?: number; reload?: boolean },
-): Promise<void> {
-  saveSettingsImmediately(settings);
+): Promise<PersistResult> {
+  const { settings: adjusted, deniedPatterns } =
+    await ensureSettingsHostPermissions(settings);
+  saveSettingsImmediately(adjusted);
   persistChain = persistChain
-    .then(() => sendPersist(settings, options))
+    .then(() => sendPersist(adjusted, options))
     .catch((error) => {
       throw error;
     });
-  return persistChain;
+  await persistChain;
+  return { settings: adjusted, deniedPatterns };
+}
+
+export async function persistSettings(
+  settings: ExtensionSettings,
+  options?: { tabId?: number; reload?: boolean },
+): Promise<PersistResult> {
+  return persistWithHostAccess(settings, options);
 }
 
 export function persistSettingsFireAndForget(
   settings: ExtensionSettings,
   options?: { tabId?: number; reload?: boolean },
 ): void {
-  saveSettingsImmediately(settings);
-  persistChain = persistChain
-    .then(() => sendPersist(settings, options))
-    .catch(() => undefined);
+  void persistWithHostAccess(settings, options).catch(() => undefined);
 }

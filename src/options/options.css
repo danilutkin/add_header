@@ -414,3 +414,20 @@ body {
     grid-template-columns: minmax(0, 1fr) auto 2rem;
   }
 }
+
+.options__footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.options__footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.options__footer a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}

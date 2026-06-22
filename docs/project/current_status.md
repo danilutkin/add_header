@@ -35,7 +35,7 @@ Last reviewed: 2026-06-20
 ## Open gaps
 
 - Per-site default profile binding (roadmap #3)
-- `<all_urls>` — acceptable for unpacked dev; narrow before store
+- Store publish: GitHub Pages deploy, listing assets, developer account
 
 ## Commands
 

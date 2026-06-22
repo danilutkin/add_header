@@ -3,18 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>add_header</title>
+    <title>Request Headers</title>
     <link rel="stylesheet" href="./popup.css" />
   </head>
   <body>
     <main class="popup">
       <header class="popup__header">
-        <h1 class="popup__title">add_header</h1>
+        <h1 class="popup__title">Request Headers</h1>
         <label class="toggle">
           <input type="checkbox" id="global-enabled" />
           <span>Enabled</span>
         </label>
       </header>
+
+      <section class="popup__notice" id="permission-notice" hidden>
+        <p id="permission-notice-text"></p>
+      </section>
 
       <section class="popup__site">
         <div class="popup__site-row">

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "add_header",
+  "name": "Request Headers",
   "version": "0.1.0",
-  "description": "Add custom HTTP request headers per website for testing and development",
+  "description": "Add custom HTTP request headers per website — profiles for QA and development",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "popup/index.html",
-    "default_title": "add_header",
+    "default_title": "Request Headers",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png"
@@ -27,10 +27,10 @@
   "permissions": [
     "storage",
     "activeTab",
-    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
     "declarativeNetRequestFeedback"
   ],
-  "host_permissions": ["<all_urls>"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "declarative_net_request": {
     "rule_resources": []
   }
