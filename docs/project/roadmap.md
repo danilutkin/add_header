@@ -69,7 +69,10 @@ When typing a header **name** in popup or options, suggest well-known names and 
 
 ## 4. Store readiness
 
-- [ ] Replace `<all_urls>` with optional/on-demand host permissions
+Active task: [chrome_web_store_publish.md](../tasks/chrome_web_store_publish.md)
+
+- [x] Public name & store discoverability (Phase 0 in [task](../tasks/chrome_web_store_publish.md))
+- [x] Replace `<all_urls>` with optional/on-demand host permissions
 - [x] Icons (SVG pipeline; listing copy, privacy policy still open)
 - [ ] Chrome Web Store submission
 

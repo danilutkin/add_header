@@ -19,9 +19,8 @@ Ranked state for cross-cutting or risky work. Last reviewed: 2026-06-20.
 ## Next
 
 1. Per-site default profile binding
-2. Optional host permissions instead of `<all_urls>` (store readiness)
-3. Chrome Web Store publish prep
-4. Header name autocomplete (Tab to complete)
+2. Chrome Web Store publish prep — [task](../tasks/chrome_web_store_publish.md) (name brainstorm, privacy policy, listing)
+3. Header name autocomplete (Tab to complete)
 
 ## Not default
 
@@ -35,7 +34,7 @@ Ranked state for cross-cutting or risky work. Last reviewed: 2026-06-20.
 
 - **Wrong URL matching** — keep tests on `url-match.ts`
 - **Popup sync order** — sync headers from DOM before re-render; never read site toggle before painting from model
-- **Store permission review** — `<all_urls>` needs narrowing before publish
+- **Store permission review** — optional on-demand host permissions (Phase 1 done); privacy policy + listing still open
 - **DNR rule limits** — batch headers (20 per rule max)
 
 ## Guardrails

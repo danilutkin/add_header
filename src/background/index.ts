@@ -5,6 +5,7 @@ import {
   DNR_RULE_ID_BASE,
   managedRulesMatch,
 } from "../shared/dnr-compile";
+import { buildGrantedPatternSet } from "../shared/host-permissions";
 
 let applyChain = Promise.resolve();
 
@@ -14,7 +15,8 @@ function enqueueApply(task: () => Promise<void>): Promise<void> {
 }
 
 async function applyRulesForSettings(settings: ExtensionSettings): Promise<void> {
-  const newRules = compileSettingsToDnrRules(settings);
+  const grantedPatterns = await buildGrantedPatternSet(settings);
+  const newRules = compileSettingsToDnrRules(settings, { grantedPatterns });
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
 
   if (managedRulesMatch(newRules, existing)) {

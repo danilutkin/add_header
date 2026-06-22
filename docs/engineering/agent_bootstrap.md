@@ -38,4 +38,4 @@ UI (popup/options) → shared (types, storage, url-match) → background → DNR
 
 ## Permissions note
 
-MVP uses `<all_urls>` host permission so rules work on any origin users configure. Narrow to optional/on-demand permissions before store publish.
+Store build uses **optional host permissions** (`optional_host_permissions` + `declarativeNetRequestWithHostAccess`). Chrome prompts when the user enables headers for a site; denied access disables that rule.

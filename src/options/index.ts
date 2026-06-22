@@ -20,6 +20,7 @@ import {
   profileTabLabel,
   removeProfileFromSiteRule,
 } from "../shared/profiles";
+import { formatHostPermissionDeniedMessage } from "../shared/host-permissions";
 import { createEmptySiteRule } from "../shared/site-rules";
 import {
   ExtensionSettings,
@@ -134,7 +135,11 @@ async function flushPersist(): Promise<void> {
   persistTimer = undefined;
   suppressStorageRender = true;
   try {
-    await persistSettings(settings);
+    const result = await persistSettings(settings);
+    settings = result.settings;
+    if (result.deniedPatterns.length > 0) {
+      window.alert(formatHostPermissionDeniedMessage());
+    }
   } finally {
     suppressStorageRender = false;
   }

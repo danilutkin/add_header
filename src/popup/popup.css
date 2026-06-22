@@ -285,6 +285,20 @@ body {
   outline-offset: 0;
 }
 
+.popup__notice {
+  margin: 0 16px 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+
+.popup__notice p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
 .popup__empty {
   text-align: center;
   padding: 16px 8px;

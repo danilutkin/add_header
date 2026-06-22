@@ -18,9 +18,11 @@ import {
   findOrCreateSiteRule,
   siteRuleHasConfiguredHeaders,
 } from "../shared/site-rules";
+import { formatHostPermissionDeniedMessage } from "../shared/host-permissions";
 import { loadSettings } from "../shared/storage";
 import { ExtensionSettings, SiteRule } from "../shared/types";
 import { findSiteRuleForUrl, getOriginFromTabUrl } from "../shared/url-match";
+import type { PersistResult } from "../shared/persist";
 
 const globalEnabledEl = document.getElementById(
   "global-enabled",
@@ -39,6 +41,8 @@ const addProfileTabBtn = document.getElementById("add-profile-tab")!;
 const emptySection = document.getElementById("empty-section")!;
 const emptyMessageEl = document.getElementById("empty-message")!;
 const openOptionsBtn = document.getElementById("open-options")!;
+const permissionNoticeEl = document.getElementById("permission-notice")!;
+const permissionNoticeTextEl = document.getElementById("permission-notice-text")!;
 const headerRowTemplate = document.getElementById(
   "header-row-template",
 ) as HTMLTemplateElement;
@@ -64,11 +68,27 @@ function syncSettingsFromDom(): void {
   }
 }
 
+function showPermissionNotice(denied: boolean): void {
+  permissionNoticeEl.hidden = !denied;
+  if (denied) {
+    permissionNoticeTextEl.textContent = formatHostPermissionDeniedMessage();
+  }
+}
+
+function applyPersistResult(result: PersistResult): void {
+  settings = result.settings;
+  if (result.deniedPatterns.length > 0) {
+    showPermissionNotice(true);
+  } else {
+    showPermissionNotice(false);
+  }
+}
+
 function schedulePersist(): void {
   syncSettingsFromDom();
   clearTimeout(persistTimer);
   persistTimer = setTimeout(() => {
-    void persistSettings(settings, { tabId: targetTabId });
+    void persistSettings(settings, { tabId: targetTabId }).then(applyPersistResult);
   }, 350);
 }
 
@@ -76,7 +96,7 @@ async function flushPersist(): Promise<void> {
   syncSettingsFromDom();
   clearTimeout(persistTimer);
   persistTimer = undefined;
-  await persistSettings(settings, { tabId: targetTabId });
+  applyPersistResult(await persistSettings(settings, { tabId: targetTabId }));
 }
 
 function persistOnClose(): void {
@@ -209,7 +229,7 @@ async function init(): Promise<void> {
   globalEnabledEl.checked = settings.globalEnabled;
   await ensureSiteRule();
   if (activeRule?.enabled) {
-    await persistSettings(settings, { tabId: targetTabId });
+    applyPersistResult(await persistSettings(settings, { tabId: targetTabId }));
   }
   render();
 }
@@ -222,7 +242,7 @@ globalEnabledEl.addEventListener("change", () => {
 siteEnabledEl.addEventListener("change", () => {
   if (!activeRule) return;
   activeRule.enabled = siteEnabledEl.checked;
-  void flushPersist();
+  void flushPersist().then(() => render());
 });
 
 addProfileTabBtn.addEventListener("click", () => {

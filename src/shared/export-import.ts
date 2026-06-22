@@ -73,7 +73,7 @@ export function serializeExport(settings: ExtensionSettings): string {
 
 export function exportFilename(date = new Date()): string {
   const stamp = date.toISOString().slice(0, 10);
-  return `add_header-export-${stamp}.json`;
+  return `request-headers-export-${stamp}.json`;
 }
 
 export function parseExportJson(text: string): ExtensionSettings {

@@ -1,6 +1,6 @@
 import { resolveHeadersForSiteRule } from "./profiles";
 import type { ExtensionSettings, HeaderEntry, SiteRule } from "./types";
-import { patternToUrlFilter } from "./url-match";
+import { canonicalizePattern, patternToUrlFilter } from "./url-match";
 
 const DNR_RULE_ID_BASE = 1_000_000;
 
@@ -56,8 +56,14 @@ function createSuppressBasicAuthRule(
   } as CompiledDnrRule;
 }
 
+export interface CompileDnrOptions {
+  /** When set, only compile patterns present in this set (canonical keys). */
+  grantedPatterns?: Set<string>;
+}
+
 export function compileSettingsToDnrRules(
   settings: ExtensionSettings,
+  options?: CompileDnrOptions,
 ): CompiledDnrRule[] {
   if (!settings.globalEnabled) return [];
 
@@ -66,7 +72,7 @@ export function compileSettingsToDnrRules(
 
   for (const siteRule of settings.siteRules) {
     if (!siteRule.enabled) continue;
-    const compiled = compileSiteRule(siteRule, ruleIndex);
+    const compiled = compileSiteRule(siteRule, ruleIndex, options?.grantedPatterns);
     rules.push(...compiled);
     ruleIndex += compiled.length;
   }
@@ -77,6 +83,7 @@ export function compileSettingsToDnrRules(
 function compileSiteRule(
   siteRule: SiteRule,
   startIndex: number,
+  grantedPatterns?: Set<string>,
 ): CompiledDnrRule[] {
   const enabledHeaders = resolveHeadersForSiteRule(siteRule).filter(
     (h) => h.enabled && h.name.trim(),
@@ -93,6 +100,11 @@ function compileSiteRule(
   const suppressBasicAuth = injectsAuthorizationHeader(enabledHeaders);
 
   for (const pattern of siteRule.patterns) {
+    if (grantedPatterns) {
+      const canonical = canonicalizePattern(pattern.trim());
+      if (!canonical || !grantedPatterns.has(canonical)) continue;
+    }
+
     const urlFilter = patternToUrlFilter(pattern);
     if (!urlFilter) continue;
 
